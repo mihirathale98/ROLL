@@ -53,6 +53,43 @@ ROLL (Reinforcement Learning Optimization for Large-Scale Learning) is an effici
 
 ## Common Development Commands
 
+### Build and Testing
+```bash
+# Run all tests
+make test
+# Equivalent to: python -m pytest -n auto --dist=loadfile -s -v ./tests/
+
+# Run specific test file
+python -m pytest tests/path/to/test_file.py -v
+
+# Run tests with specific pattern
+python -m pytest -k "test_pattern" -v
+
+# Code formatting and linting
+make precommit
+# Runs: black, isort, autoflake, flake8 with 119 char line length
+
+# Manual formatting commands
+black --line-length=119 .
+isort --profile=black .
+ruff check . --fix
+```
+
+### Installation
+```bash
+# Clone and install
+git clone https://github.com/alibaba/ROLL.git
+cd ROLL
+
+# Install dependencies (choose based on your setup)
+pip install -r requirements_torch251_vllm.txt  # CUDA + vLLM
+pip install -r requirements_torch251_sglang.txt  # CUDA + SGLang
+pip install -r requirements_vision.txt  # For VL models
+
+# For development
+pip install -e .
+```
+
 ### Running Pipelines
 ```bash
 # RLVR Pipeline
@@ -61,8 +98,19 @@ python examples/start_rlvr_pipeline.py --config_name sppo_config
 # Agentic Pipeline
 python examples/start_agentic_pipeline.py --config_name sokoban_ppo_config
 
+# Distill Pipeline
+python examples/start_distill_pipeline.py
+
+# VL Pipeline
+python examples/start_rlvr_vl_pipeline.py
+
 # Override config parameters
 python examples/start_rlvr_pipeline.py rollout_batch_size=128 max_steps=1000
+```
+
+### Model Conversion (Megatron to HuggingFace)
+```bash
+python mcore_adapter/tools/convert.py --checkpoint_path path_to_megatron_model --output_path path_to_output_hf_model
 ```
 
 ## High-Level Architecture
@@ -157,3 +205,25 @@ When configuring training:
 - `reward_clip`: Clip extreme rewards (5-10 typical)
 - `advantage_clip`: Clip advantages for stability
 - `domain_interleave_probs`: Multi-domain sampling ratios
+
+## File Structure & Organization
+
+Key directories for development:
+- `roll/pipeline/`: Main pipeline implementations (RLVR, Agentic, Distill, DPO)
+- `roll/distributed/`: Ray-based distributed architecture (executor, scheduler, strategy)
+- `roll/models/`: Model providers and function providers for different frameworks
+- `roll/utils/`: Utilities for checkpointing, metrics, collective ops, etc.
+- `examples/`: Ready-to-use configurations and start scripts
+- `tests/`: Comprehensive test suite with pytest configuration
+- `docs_roll/`: Documentation source (English and Chinese)
+- `third_party/`: Custom patches for vLLM, SGLang, DeepSpeed, Megatron
+
+## Development Workflow
+
+When working on this codebase:
+1. Use `make test` to run tests before committing
+2. Use `make precommit` to format code (black, isort, autoflake, flake8)
+3. Follow existing patterns in `roll/pipeline/` when adding new pipelines
+4. Check `examples/` for configuration templates
+5. Worker implementations follow role-based architecture (Actor, Critic, Reference, Reward, Environment)
+6. Strategy abstraction (`roll/distributed/strategy/`) supports multiple backends

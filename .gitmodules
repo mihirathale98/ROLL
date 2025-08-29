@@ -1,3 +1,6 @@
 [submodule "third_party/webshop-minimal"]
 	path = third_party/webshop-minimal
 	url = https://github.com/ZihanWang314/webshop-minimal.git
+[submodule "tau-bench"]
+	path = tau-bench
+	url = https://github.com/sierra-research/tau-bench.git

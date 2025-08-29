@@ -53,3 +53,12 @@ try:
     REGISTERED_ENV_CONFIGS["webshop"] = WebShopEnvConfig
 except Exception as e:
     logger.info(f"Failed to import webshop: {e}")
+
+try:
+    from .tau_retail.config import TauRetailEnvConfig
+    from .tau_retail.env import TauRetailEnv
+
+    REGISTERED_ENVS["tau_retail"] = TauRetailEnv
+    REGISTERED_ENV_CONFIGS["tau_retail"] = TauRetailEnvConfig
+except Exception as e:
+    logger.info(f"Failed to import tau_retail: {e}")

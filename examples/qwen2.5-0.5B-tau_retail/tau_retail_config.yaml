@@ -1,0 +1,87 @@
+# Tau-bench retail environment configuration for ROLL agentic training
+# Example: Train Qwen2.5-0.5B on customer service conversations
+
+defaults:
+  - envs: traj_envs
+  - _self_
+
+# Pipeline configuration
+pipeline_name: agentic
+exp_name: qwen2.5_0.5B_tau_retail
+seed: 1234
+
+# Model configuration
+actor_model:
+  model_name: Qwen/Qwen2.5-0.5B-Instruct
+  strategy: hf
+  grad_ckpt: false
+  device_map:
+    actor_train: [0]
+    actor_infer: [1]
+  strategy_kwargs:
+    args:
+      trust_remote_code: true
+
+# Training parameters
+rollout_batch_size: 16
+num_return_sequences_in_group: 4
+max_steps: 500
+eval_steps: 50
+logging_steps: 10
+save_steps: 100
+
+# RL algorithm configuration
+algorithm: ppo
+ppo_epochs: 1
+init_kl_coef: 0.02
+target_kl: 0.1
+advantage_normalization: true
+value_clip: 10.0
+reward_clip: 5.0
+
+# Environment configuration
+envs:
+  env_name: tau_retail
+  env_kwargs:
+    user_strategy: llm
+    user_model: gpt-4o
+    user_provider: openai
+    max_steps: 30
+    task_subset: all
+    randomize_tasks: true
+  
+  max_episode_length: 30
+  terminate_reward: 1.0
+  env_instruction: |
+    You are a customer service agent for an online retail company. Your job is to help customers with their orders.
+    
+    Available tools:
+    - get_user_details: Get customer information
+    - get_order_details: Get order information
+    - cancel_pending_order: Cancel orders that haven't shipped
+    - modify_pending_order_items: Change items in pending orders
+    - modify_pending_order_payment: Change payment method
+    - modify_pending_order_address: Change shipping address
+    - return_delivered_order_items: Process returns for delivered orders
+    - exchange_delivered_order_items: Process exchanges for delivered orders
+    - respond: Communicate with the customer
+    
+    Guidelines:
+    - Always be polite and helpful
+    - Verify customer identity when needed
+    - Follow company policies for returns and exchanges
+    - Use tools to make actual changes to orders
+    - Keep customers informed about what you're doing
+
+# Data configuration
+# No separate data config needed - tau-bench provides training tasks
+
+# Logging configuration
+use_wandb: false
+log_dir: ./logs/tau_retail
+ckpt_dir: ./checkpoints/tau_retail
+
+# Resource configuration
+ray_config:
+  num_cpus: 8
+  num_gpus: 2
